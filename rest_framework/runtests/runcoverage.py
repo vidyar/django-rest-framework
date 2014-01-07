@@ -49,7 +49,7 @@ def main():
 
     for (path, dirs, files) in os.walk(project_dir):
         # Drop tests and runtests directories from the test coverage report
-        if os.path.basename(path) in ['tests', 'runtests', 'migrations']:
+        if os.path.basename(path) in ['runtests', 'migrations']:
             continue
 
         # Drop the compat and six modules from coverage, since we're not interested in the coverage
@@ -60,12 +60,6 @@ def main():
 
         if 'six.py' in files:
             files.remove('six.py')
-
-        # Same applies to template tags module.
-        # This module has to include branching on Django versions,
-        # so it's never possible for it to have full coverage.
-        if 'rest_framework.py' in files:
-            files.remove('rest_framework.py')
 
         cov_files.extend([os.path.join(path, file) for file in files if file.endswith('.py')])
 

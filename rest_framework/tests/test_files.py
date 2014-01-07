@@ -1,7 +1,8 @@
 from __future__ import unicode_literals
 from django.test import TestCase
+from django.utils import unittest
 from rest_framework import serializers
-from rest_framework.compat import BytesIO
+from rest_framework.compat import BytesIO, PIL
 from rest_framework.compat import six
 import datetime
 
@@ -14,6 +15,18 @@ class UploadedFile(object):
 
 class UploadedFileSerializer(serializers.Serializer):
     file = serializers.FileField(required=False)
+    created = serializers.DateTimeField()
+
+    def restore_object(self, attrs, instance=None):
+        if instance:
+            instance.file = attrs['file']
+            instance.created = attrs['created']
+            return instance
+        return UploadedFile(**attrs)
+
+
+class UploadedImageSerializer(serializers.Serializer):
+    file = serializers.ImageField(required=False)
     created = serializers.DateTimeField()
 
     def restore_object(self, attrs, instance=None):
@@ -93,3 +106,17 @@ class FileSerializerTests(TestCase):
 
         serializer = UploadedFileSerializer(files={'file': file})
         self.assertFalse(serializer.is_valid())
+
+
+
+class ImageSerializerTests(TestCase):
+    @unittest.skipUnless(PIL, 'Pillow/PIL not installed')
+    def test_create_invalid_image(self):
+        now = datetime.datetime.now()
+        file = BytesIO(six.b('stuff'))
+        file.name = 'stuff.txt'
+        file.size = len(file.getvalue())
+        serializer = UploadedImageSerializer(data={'created': now}, files={'file': file})
+        self.assertFalse(serializer.is_valid())
+        msg = 'Upload a valid image. The file you uploaded was either not an image or a corrupted image.'
+        self.assertEqual(serializer.errors, {'file': [msg]})

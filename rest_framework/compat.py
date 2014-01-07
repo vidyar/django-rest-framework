@@ -54,6 +54,11 @@ try:
 except ImportError:
     guardian = None
 
+# Pillow (or PIL) is optional
+try:
+    import PIL
+except ImportError:
+    PIL = None
 
 # cStringIO only if it's available, otherwise StringIO
 try:
