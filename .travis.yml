@@ -30,6 +30,7 @@ install:
 script:
   - python rest_framework/runtests/runtests.py
 
+
 matrix:
   exclude:
     - python: "2.6"
